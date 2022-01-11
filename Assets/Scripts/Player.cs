@@ -5,6 +5,10 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public bool canTripleShot;
+    public bool isSpeedBoostActive;
+    public bool canShield;
+
     [SerializeField]
     private float _speed;
     [SerializeField]
@@ -22,8 +26,8 @@ public class Player : MonoBehaviour
     private float _bottomLimit;
     [SerializeField]
     private float _topLimit;
-
-    public bool canTripleShot;
+    [SerializeField]
+    private float _speedBoost;
 
     void Start()
     {
@@ -34,16 +38,28 @@ public class Player : MonoBehaviour
         _topLimit = 4.15f;
         _fireRate = 0.25f;
         _nextFire = 0.0f;
+        _speedBoost = 2.0f;
         transform.position = new Vector3(0, -4, 0);
         canTripleShot = false;
+        isSpeedBoostActive = false;
+        canShield = false;
     }
 
     void Update()
     {
         Move();
-        Shoot();
+
+        if (Time.time >= _nextFire)
+        {
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButton(0))
+            {
+                Shoot();
+                _nextFire = Time.time + _fireRate;
+            }
+        }
     }
 
+    // Controls player's movement direction
     private void Move()
     {
         if (Input.GetKey(KeyCode.D))
@@ -66,6 +82,7 @@ public class Player : MonoBehaviour
         MoveLimiter();
     }
 
+    // Limit player's movement
     private void MoveLimiter()
     {
         if(transform.position.x < _leftLimit) transform.position = new Vector3(_rightLimit, transform.position.y, 0);
@@ -74,34 +91,51 @@ public class Player : MonoBehaviour
         else if(transform.position.y > _topLimit) transform.position = new Vector3(transform.position.x, _topLimit, 0);
     }
 
+    // Controls player's shooting action and type
     private void Shoot()
     {
-        if(Time.time >= _nextFire)
+        if (canTripleShot)
         {
-            if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButton(0))
-            {
-                if (canTripleShot)
-                {
-                    Instantiate(_tripleLaserPrefab, transform.position, Quaternion.identity);
-                } 
-                else
-                {
-                    Instantiate(_laserPrefab, transform.position + new Vector3(0, 0.5f, 0), Quaternion.identity);
-                }
-                _nextFire = Time.time + _fireRate;
-            }
+            Instantiate(_tripleLaserPrefab, transform.position, Quaternion.identity);
+        }
+        else
+        {
+            Instantiate(_laserPrefab, transform.position + new Vector3(0, 0.5f, 0), Quaternion.identity);
         }
     }
 
-    public void TripleShotPowerUpOn()
+    // Activate PowerUp based on ID (0: triple shot, 1: speed boost, 2: shield) and start cooldown coroutine
+    public void PowerUpOn(int powerID)
     {
-        canTripleShot = true;
-        StartCoroutine(TripleShotPowerDownRoutine());
+        if (powerID == 0) canTripleShot = true;
+        else if (powerID == 1) 
+        { 
+            isSpeedBoostActive = true;
+            _speed *= _speedBoost;
+        }
+        else canShield = true;
+        StartCoroutine(PowerDownRoutine(powerID));
     }
 
-    public IEnumerator TripleShotPowerDownRoutine()
+    // Coroutine that acts as a cooldown controler for the PowerUps
+    public IEnumerator PowerDownRoutine(int powerID)
     {
-        yield return new WaitForSeconds(5.0f);
-        canTripleShot = false;
+        if(powerID == 0)
+        {
+            yield return new WaitForSeconds(5.0f);
+            canTripleShot = false;
+        }
+        else if(powerID == 1)
+        {
+            yield return new WaitForSeconds(3.5f);
+            _speed /= _speedBoost;
+            isSpeedBoostActive = false;
+        }
+        else
+        {
+            yield return new WaitForSeconds(4.0f);
+            canShield = false;
+        }
+        
     }
 }
