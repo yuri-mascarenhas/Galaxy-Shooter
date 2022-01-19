@@ -10,6 +10,8 @@ public class Player : MonoBehaviour
     public bool canShield;
 
     [SerializeField]
+    private int _life;
+    [SerializeField]
     private float _speed;
     [SerializeField]
     private GameObject _laserPrefab;
@@ -31,6 +33,7 @@ public class Player : MonoBehaviour
 
     void Start()
     {
+        _life = 3;
         _speed = 5.0f;
         _leftLimit = -9.6f;
         _rightLimit = 9.6f;
@@ -47,7 +50,7 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        Move();
+        Movement();
 
         if (Time.time >= _nextFire)
         {
@@ -60,7 +63,7 @@ public class Player : MonoBehaviour
     }
 
     // Controls player's movement direction
-    private void Move()
+    private void Movement()
     {
         if (Input.GetKey(KeyCode.D))
         {
@@ -102,6 +105,13 @@ public class Player : MonoBehaviour
         {
             Instantiate(_laserPrefab, transform.position + new Vector3(0, 0.5f, 0), Quaternion.identity);
         }
+    }
+
+    // Damages the player with the value entered
+    public void Damage(int damage)
+    {
+        _life -= damage;
+        if (_life <= 0) Destroy(this.gameObject);
     }
 
     // Activate PowerUp based on ID (0: triple shot, 1: speed boost, 2: shield) and start cooldown coroutine
