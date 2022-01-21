@@ -18,6 +18,8 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject _tripleLaserPrefab;
     [SerializeField]
+    private GameObject _explosionPrefab;
+    [SerializeField]
     private float _fireRate;
     private float _nextFire;
     [SerializeField]
@@ -111,7 +113,11 @@ public class Player : MonoBehaviour
     public void Damage(int damage)
     {
         _life -= damage;
-        if (_life <= 0) Destroy(this.gameObject);
+        if (_life <= 0)
+        {
+            Instantiate(_explosionPrefab, transform.position, Quaternion.identity);
+            Destroy(this.gameObject);
+        }
     }
 
     // Activate PowerUp based on ID (0: triple shot, 1: speed boost, 2: shield) and start cooldown coroutine

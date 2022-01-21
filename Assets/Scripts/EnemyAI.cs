@@ -10,6 +10,9 @@ public class EnemyAI : MonoBehaviour
     private GameObject _playerPrefab;
     [SerializeField]
     private GameObject _laserPrefab;
+    [SerializeField]
+    private GameObject _ExplosionPrefab;
+
 
     // Start is called before the first frame update
     void Start()
@@ -41,12 +44,14 @@ public class EnemyAI : MonoBehaviour
         {
             Player player = other.GetComponent<Player>();
             if (player != null) player.Damage(1);
+            Instantiate(_ExplosionPrefab, this.transform.position, Quaternion.identity);
             Destroy(this.gameObject);
         }
         else if(other.tag == "Laser")
         {
             if(other.transform.parent != null) Destroy(other.transform.parent.gameObject);
             Destroy(other.gameObject);
+            Instantiate(_ExplosionPrefab, this.transform.position, Quaternion.identity);
             Destroy(this.gameObject);
         }
     }
