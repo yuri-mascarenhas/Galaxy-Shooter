@@ -5,33 +5,23 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    [SerializeField] private int _life;
+    [SerializeField] private float _speed;
+    [SerializeField] private GameObject _laserPrefab;
+    [SerializeField] private GameObject _tripleLaserPrefab;
+    [SerializeField] private GameObject _explosionPrefab;
+    [SerializeField] private GameObject _shieldGameObject;
+    [SerializeField] private float _fireRate;
+    [SerializeField] private float _leftLimit;
+    [SerializeField] private float _rightLimit;
+    [SerializeField] private float _bottomLimit;
+    [SerializeField] private float _topLimit;
+    [SerializeField] private float _speedBoost;
     public bool canTripleShot;
     public bool isSpeedBoostActive;
-    public bool canShield;
-
-    [SerializeField]
-    private int _life;
-    [SerializeField]
-    private float _speed;
-    [SerializeField]
-    private GameObject _laserPrefab;
-    [SerializeField]
-    private GameObject _tripleLaserPrefab;
-    [SerializeField]
-    private GameObject _explosionPrefab;
-    [SerializeField]
-    private float _fireRate;
+    public bool isShieldActive;
     private float _nextFire;
-    [SerializeField]
-    private float _leftLimit;
-    [SerializeField]
-    private float _rightLimit;
-    [SerializeField]
-    private float _bottomLimit;
-    [SerializeField]
-    private float _topLimit;
-    [SerializeField]
-    private float _speedBoost;
+
 
     void Start()
     {
@@ -47,7 +37,8 @@ public class Player : MonoBehaviour
         transform.position = new Vector3(0, -4, 0);
         canTripleShot = false;
         isSpeedBoostActive = false;
-        canShield = false;
+        isShieldActive = false;
+        _shieldGameObject.SetActive(false);
     }
 
     void Update()
@@ -112,6 +103,12 @@ public class Player : MonoBehaviour
     // Damages the player with the value entered
     public void Damage(int damage)
     {
+        if (isShieldActive)
+        {
+            isShieldActive = false;
+            _shieldGameObject.SetActive(false);
+            return;
+        }
         _life -= damage;
         if (_life <= 0)
         {
@@ -124,12 +121,16 @@ public class Player : MonoBehaviour
     public void PowerUpOn(int powerID)
     {
         if (powerID == 0) canTripleShot = true;
-        else if (powerID == 1) 
-        { 
+        else if (powerID == 1)
+        {
             isSpeedBoostActive = true;
             _speed *= _speedBoost;
         }
-        else canShield = true;
+        else
+        {
+            isShieldActive = true;
+            _shieldGameObject.SetActive(true);
+        }
         StartCoroutine(PowerDownRoutine(powerID));
     }
 
@@ -149,8 +150,9 @@ public class Player : MonoBehaviour
         }
         else
         {
-            yield return new WaitForSeconds(4.0f);
-            canShield = false;
+            yield return new WaitForSeconds(7.0f);
+            isShieldActive = false;
+            _shieldGameObject.SetActive(false);
         }
         
     }
